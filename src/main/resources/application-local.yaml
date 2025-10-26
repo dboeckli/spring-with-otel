@@ -3,8 +3,7 @@ server:
 
 spring:
   application:
-    # // TODO: RENAME ME
-    name: spring-6-project-template
+    name: spring-with-otel
   docker:
     compose:
       enabled: true

@@ -1,4 +1,4 @@
-package ch.dboeckli.template.log.config;
+package ch.dboeckli.example.otel.log.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

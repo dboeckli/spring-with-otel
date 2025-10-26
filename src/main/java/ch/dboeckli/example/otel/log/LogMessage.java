@@ -1,4 +1,4 @@
-package ch.dboeckli.template.log;
+package ch.dboeckli.example.otel.log;
 
 import org.slf4j.helpers.MessageFormatter;
 

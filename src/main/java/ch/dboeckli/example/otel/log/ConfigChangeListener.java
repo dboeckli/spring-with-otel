@@ -1,4 +1,4 @@
-package ch.dboeckli.template.log;
+package ch.dboeckli.example.otel.log;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.ContextRefreshedEvent;

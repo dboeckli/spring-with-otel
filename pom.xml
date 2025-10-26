@@ -9,10 +9,8 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <!-- TODO: RENAME ME -->
-    <groupId>ch.dboeckli.template</groupId>
-    <!-- TODO: RENAME ME -->
-    <artifactId>spring-6-project-template</artifactId>
+    <groupId>ch.dboeckli.opentelemetry</groupId>
+    <artifactId>spring-with-otel</artifactId>
     <version>0.0.13-SNAPSHOT</version>
 
     <name>${project.artifactId}</name>

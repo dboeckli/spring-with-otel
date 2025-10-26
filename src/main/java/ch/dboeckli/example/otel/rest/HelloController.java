@@ -1,4 +1,4 @@
-package ch.dboeckli.template.rest;
+package ch.dboeckli.example.otel.rest;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

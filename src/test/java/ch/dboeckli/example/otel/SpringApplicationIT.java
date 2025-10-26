@@ -1,5 +1,4 @@
-package ch.dboeckli.template;
-// TODOS: RENAME PACKAGE
+package ch.dboeckli.example.otel;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -13,8 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
 @Slf4j
 @ActiveProfiles("local")
-// TODOS: RENAME ME
-class Spring6TemplateApplicationIT {
+class SpringApplicationIT {
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -22,7 +20,7 @@ class Spring6TemplateApplicationIT {
     @Test
     void contextLoads() {
         assertNotNull(applicationContext, "Application context should not be null");
-        log.info("Testing Spring 6 Application {}", applicationContext.getApplicationName());
+        log.info("Testing Spring Otel Application {}", applicationContext.getApplicationName());
     }
 
 }

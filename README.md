@@ -139,36 +139,36 @@ tar -xvf $file.Name
 install
 ```powershell
 $APPLICATION_NAME = Get-ChildItem -Directory | Where-Object { $_.LastWriteTime -ge $file.LastWriteTime } | Select-Object -ExpandProperty Name
-helm upgrade --install $APPLICATION_NAME ./$APPLICATION_NAME --namespace spring-6-project-template --create-namespace --wait --timeout 8m --debug --render-subchart-notes
+helm upgrade --install $APPLICATION_NAME ./$APPLICATION_NAME --namespace spring-with-otel --create-namespace --wait --timeout 8m --debug --render-subchart-notes
 ```
 
 show logs
 ```powershell
-kubectl get pods -l app.kubernetes.io/name=$APPLICATION_NAME -n spring-6-project-template
+kubectl get pods -l app.kubernetes.io/name=$APPLICATION_NAME -n spring-with-otel
 ```
 replace $POD with pods from the command above
 ```powershell
-kubectl logs $POD -n spring-6-project-template --all-containers
+kubectl logs $POD -n spring-with-otel --all-containers
 ```
 
 test
 ```powershell
-helm test $APPLICATION_NAME --namespace spring-6-project-template --logs
+helm test $APPLICATION_NAME --namespace spring-with-otel --logs
 ```
 
 uninstall
 ```powershell
-helm uninstall $APPLICATION_NAME --namespace spring-6-project-template
+helm uninstall $APPLICATION_NAME --namespace spring-with-otel
 ```
 
 delete all
 ```powershell
-kubectl delete all --all -n spring-6-project-template
+kubectl delete all --all -n spring-with-otel
 ```
 
 create busybox sidecar
 ```powershell
-kubectl run busybox-test --rm -it --image=busybox:1.36 --namespace=spring-6-project-template --command -- sh
+kubectl run busybox-test --rm -it --image=busybox:1.36 --namespace=spring-with-otel --command -- sh
 ```
 
 You can use the actuator rest call to verify via port 30080
