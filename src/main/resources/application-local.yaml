@@ -1,0 +1,91 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    # // TODO: RENAME ME
+    name: spring-6-project-template
+  docker:
+    compose:
+      enabled: false
+      stop:
+        command: down
+
+management:
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
+  endpoints:
+    access:
+      default: unrestricted
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    configprops:
+      # WARNING: SECURITY RISK - DO NOT USE IN PRODUCTION ENVIRONMENT
+      # This configuration exposes sensitive data and should only be used for development or testing purposes.
+      # Ensure this is disabled in any environment where security is a concern.
+      show-values: ALWAYS
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  info:
+    build:
+      enabled: true
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+    git:
+      enabled: true
+      mode: full
+
+
+logging:
+  level:
+    org.zalando.logbook: TRACE
+
+logbook:
+  filter:
+    enabled: true
+  format:
+    style: http
+  obfuscate:
+    headers:
+      - Authorization
+      - X-Secret
+    parameters:
+      - access_token
+      - password
+  predicate:
+    exclude:
+      # Exclude HTML-related calls and specific endpoints that Logbook doesn't handle correctly
+      - path: /actuator/health/**
+      - path: /h2-console/**  # Exclude H2 console
+      - path: /swagger-ui/**  # Exclude Swagger UI if used
+      - path: /v3/api-docs/** # Exclude OpenAPI docs if used
+        # Exclude HTML-related calls and web resources
+      - path: /favicon.ico
+      - path: /**/*.html
+      - path: /**/*.css
+      - path: /**/*.js
+      - path: /**/*.png
+      - path: /**/*.jpg
+      - path: /**/*.jpeg
+      - path: /**/*.gif
+      - path: /**/*.ico
+      - path: /**/favicon.ico
+      - path: /**/webjars/**
+        # Exclude other common web resources
+      - path: /**/assets/**
+      - path: /**/static/**
+      - path: /**/public/**
+      - path: /**/resources/**
+      - path: /webjars/**
+      # Add more exclusions as needed
