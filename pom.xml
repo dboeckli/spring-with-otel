@@ -52,6 +52,9 @@
         <!-- our dependencies -->
         <spring-6-rest-mvc-api.version>0.0.1-SNAPSHOT</spring-6-rest-mvc-api.version>
 
+        <!-- test dependencies -->
+        <logcaptor.version>2.12.1</logcaptor.version>
+
         <!-- Sonar -->
         <sonar-maven-plugin.version>5.2.0.4988</sonar-maven-plugin.version>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
@@ -197,6 +200,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.hakky54</groupId>
+            <artifactId>logcaptor</artifactId>
+            <version>${logcaptor.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

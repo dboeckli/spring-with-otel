@@ -9,6 +9,8 @@ spring:
       enabled: true
       stop:
         command: down
+      skip:
+        in-tests: false
 
 management:
   health:

@@ -1,0 +1,8 @@
+# get buildInfo
+GET http://localhost:{{prometheus-port}}/api/v1/status/buildinfo
+
+### get metrics
+GET http://localhost:{{prometheus-port}}/api/v1/query?query=http_server_requests_seconds_count
+
+### get logs
+GET http://localhost:{{prometheus-port}}/api/v1/query?query=otel_logs_exporter_exported_log_records

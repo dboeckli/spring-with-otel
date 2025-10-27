@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class HelloController {
 
+    protected final static String HELLO_MESSAGE = "Say Hello...";
+
     @GetMapping("/hello")
     public ResponseEntity<String> hello() {
-        log.info("Say Hello...");
+        log.info(HELLO_MESSAGE);
         return new ResponseEntity<>("{\"message\":\"hello\"}", HttpStatus.OK);
     }
 }
