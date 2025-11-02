@@ -24,7 +24,14 @@ import static ch.dboeckli.example.otel.rest.HelloController.HELLO_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {
+        "otel.traces.exporter=none",
+        "otel.metrics.exporter=none",
+        "otel.logs.exporter=none"
+    }
+)
 @ActiveProfiles("local")
 class HelloControllerIT {
 

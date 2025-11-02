@@ -18,11 +18,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @DirtiesContext
-@SpringBootTest
+@SpringBootTest(
+    properties = {
+        "otel.traces.exporter=none",
+        "otel.metrics.exporter=none",
+        "otel.logs.exporter=none"
+    }
+)
 @AutoConfigureMockMvc
 @Slf4j
 @ActiveProfiles("local")
-class ActuatorInfoTest {
+class ActuatorInfoIT {
 
     @Autowired
     private MockMvc mockMvc;
