@@ -17,7 +17,7 @@ import java.util.List;
 import static org.awaitility.Awaitility.await;
 
 @SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
         "spring.docker.compose.skip.in-tests=false"
     }
