@@ -1,4 +1,4 @@
-package ch.dboeckli.example.otel.rest;
+package ch.dboeckli.example.otel.observability;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +26,7 @@ import static org.awaitility.Awaitility.await;
 @ActiveProfiles("local")
 @Slf4j
 @AutoConfigureObservability
-class HelloControllerWithPrometheusIT {
+class MetricsWithPrometheusIT {
     @Autowired
     TestRestTemplate restTemplate;
 
