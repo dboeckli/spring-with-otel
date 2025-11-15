@@ -32,6 +32,10 @@ management:
       probes:
         enabled: true
       show-details: always
+    prometheus:
+      access: unrestricted
+    env:
+      show-values: ALWAYS
   info:
     build:
       enabled: true
@@ -45,17 +49,20 @@ management:
       enabled: true
       mode: full
   tracing:
-    enabled: true
-    sampling:
-      probability: '1.0'
+    enabled: false
   otlp:
     tracing:
       endpoint: http://localhost:4318/v1/traces
+      export:
+        enabled: false
     metrics:
       export:
         url: http://localhost:4318/v1/metrics
+        enabled: false
     logging:
       endpoint: http://localhost:4318/v1/logs
+      export:
+        enabled: false
 
 otel:
   service:
@@ -63,7 +70,6 @@ otel:
   exporter:
     otlp:
       endpoint: http://localhost:4318
-
 
 logging:
   level:
