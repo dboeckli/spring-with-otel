@@ -27,6 +27,7 @@ import static org.awaitility.Awaitility.await;
 @Slf4j
 @AutoConfigureObservability
 class MetricsWithPrometheusIT {
+
     @Autowired
     TestRestTemplate restTemplate;
 
