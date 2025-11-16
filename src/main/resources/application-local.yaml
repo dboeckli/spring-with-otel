@@ -32,6 +32,10 @@ management:
       probes:
         enabled: true
       show-details: always
+    prometheus:
+      access: unrestricted
+    env:
+      show-values: ALWAYS
   info:
     build:
       enabled: true
@@ -44,18 +48,24 @@ management:
     git:
       enabled: true
       mode: full
+
+  # --- OpenTelemetry / OTLP ---
   tracing:
-    enabled: true
-    sampling:
-      probability: '1.0'
+    enabled: true   # enable tracing with OpenTelemetry
   otlp:
     tracing:
-      endpoint: http://localhost:4318/v1/traces
+      endpoint: http://localhost:4318/v1/traces  # Collector
+      export:
+        enabled: true  # Traces to Collector
     metrics:
       export:
-        url: http://localhost:4318/v1/metrics
+        url: http://localhost:4318/v1/metrics     # Collector
+        enabled: true  # Metrics to Collector
+        step: 60s
     logging:
-      endpoint: http://localhost:4318/v1/logs
+      endpoint: http://localhost:4318/v1/logs     # Collector
+      export:
+        enabled: true  # Logs to Collector
 
 otel:
   service:
@@ -63,7 +73,15 @@ otel:
   exporter:
     otlp:
       endpoint: http://localhost:4318
-
+  metrics:
+    exporter: otlp
+  traces:
+    exporter: otlp
+  logs:
+    exporter: otlp
+  instrumentation:
+    logback-mdc:
+      add-baggage: true
 
 logging:
   level:

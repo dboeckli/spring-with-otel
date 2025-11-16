@@ -11,12 +11,19 @@
                 <thread>thread_name</thread>
                 <message>message</message>
             </fieldNames>
+            <!-- OpenTelemetry Micrometer Format -->
             <includeMdcKeyName>traceId</includeMdcKeyName>
             <includeMdcKeyName>spanId</includeMdcKeyName>
+            <!-- OpenTelemetry Format -->
             <includeMdcKeyName>trace_id</includeMdcKeyName>
             <includeMdcKeyName>span_id</includeMdcKeyName>
+            <!-- ECS APM Telemetry Format -->
+            <includeMdcKeyName>trace.id</includeMdcKeyName>
+            <includeMdcKeyName>transcation.id</includeMdcKeyName>
+            <includeMdcKeyName>span.id</includeMdcKeyName>
         </encoder>
     </appender>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <!-- Trace-/Span-IDs aus MDC: OTel: traceId/spanId -->

@@ -18,19 +18,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @DirtiesContext
-@SpringBootTest
+@SpringBootTest(
+    properties = {
+        "otel.traces.exporter=none",
+        "otel.metrics.exporter=none",
+        "otel.logs.exporter=none"
+    }
+)
 @AutoConfigureMockMvc
 @Slf4j
 @ActiveProfiles("local")
-class ActuatorInfoTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    BuildProperties buildProperties;
+class ActuatorInfoIT {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    @Autowired
+    BuildProperties buildProperties;
+    @Autowired
+    private MockMvc mockMvc;
 
     @Test
     void actuatorInfoTest() throws Exception {

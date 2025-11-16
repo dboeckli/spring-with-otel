@@ -52,6 +52,9 @@
         <!-- our dependencies -->
         <spring-6-rest-mvc-api.version>0.0.1-SNAPSHOT</spring-6-rest-mvc-api.version>
 
+        <!-- test dependencies -->
+        <logcaptor.version>2.12.1</logcaptor.version>
+
         <!-- Sonar -->
         <sonar-maven-plugin.version>5.2.0.4988</sonar-maven-plugin.version>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
@@ -199,6 +202,19 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-testing</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.hakky54</groupId>
+            <artifactId>logcaptor</artifactId>
+            <version>${logcaptor.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -302,7 +318,6 @@
                         <id>create-bill-of-materials</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>makeAggregateBom</goal>
                             <goal>makeBom</goal>
                         </goals>
                     </execution>

@@ -35,7 +35,7 @@ services:
     restart: unless-stopped
 
   prometheus:
-    image: prom/prometheus:v3.7.1
+    image: prom/prometheus:v3.7.3
     container_name: prometheus
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -68,6 +68,26 @@ services:
       - monitoring
     depends_on:
       - elasticsearch
+    restart: unless-stopped
+
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:9.1.5
+    container_name: apm-server
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - output.elasticsearch.hosts=["http://elasticsearch:9200"]
+      - apm-server.kibana.enabled=true
+      - apm-server.kibana.host=kibana:5601
+      # OTLP HTTP Endpoint aktivieren
+      - apm-server.otlp.enabled=true
+      - apm-server.otlp.http.enabled=true
+      - apm-server.otlp.http.host=0.0.0.0:8200
+    ports:
+      - "8200:8200"
+    networks:
+      - monitoring
     restart: unless-stopped
 
 networks:

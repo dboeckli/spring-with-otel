@@ -1,187 +1,166 @@
-# Spring Boot 6 Template Project
+# Spring Boot 6 Open Telemetry Project
 
-## Introduction
-This project serves as a template for Spring Boot 6 applications. It provides a solid foundation for quickly starting new Spring Boot projects with pre-configured settings and best practices.
+## Observability / Monitoring Setup
 
-## Prerequisites
-- GitHub account
-- Git
-- JDK 21 or later
-- Maven
-- IntelliJ IDEA (recommended) or any preferred IDE
-- Docker account (for image publishing)
+Dieses Projekt bringt ein vollständiges Observability-Setup mit **OpenTelemetry** und mehreren Backends mit.
+Siehe auch: https://last9.io/blog/opentelemetry-for-spring/
 
-## Getting Started
+### Architekturüberblick
 
-### 1. Project Setup
-1. In GitHub, create a new project using this template.
-2. In the new project's Settings:
-    - Enable 'Automatically delete head branches'
-    - Enable 'Always suggest updating pull request branches'
-3. Set Branch Protection Rules similar to this template project. Do not Lock Master branch there.
+#### Traces
+```
+┌────────────────────────────────────────────────────────────────────────────┐
+│                       Anwendung (spring-with-otel)                          │
+└────────────────┬────────────────────────────────────────────────────────────┘
+                 │  OTLP (Traces)
+                 v
+       ┌─────────┴───────────────────────────────────────────────────────────────────────┐
+       │                           OTEL COLLECTOR                                        │
+       │                           (otel-collector)                                      │
+       └───────────────┬──────────────────────────────┬────────────────────────┬─────────┘
+                       │                              │                        │
+                       │                              │                        │
+                       v                              v                        v
+         ┌─────────────────────────┐     ┌─────────────────────────┐   ┌──────────────────────────┐
+         │         JAEGER          │     │         ZIPKIN          │   │     ELASTIC APM SERVER   │
+         │       jaeger:4317       │     │       zipkin:9411       │   │      apm-server:8200     │
+         └─────────────────────────┘     └─────────────────────────┘   └───────────────┬──────────┘
+                                                                                       │
+                                                                                       │ schreibt Traces
+                                                                                       v
+                                                                           ┌──────────────────────────┐
+                                                                           │       ELASTICSEARCH      │
+                                                                           │      localhost:9200      │
+                                                                           └───────────────┬──────────┘
+                                                                                           │
+                                                                                           v
+                                                                                   ┌───────────────────┐
+                                                                                   │      KIBANA       │
+                                                                                   │   localhost:5601  │
+                                                                                   └───────────────────┘
 
-### 2. Local Development Setup
-1. Clone the newly created project.
-2. Configure Maven settings in your IDE:
-    - Point to a valid `settings.xml` for GitHub dependency resolution.
-    - Set local Maven repository outside of Microsoft's cloud (e.g., `C:\development\tools\maven-repo`).
-3. Create a feature branch for your changes.
+Hinweise:
+- Traces gehen an **Jaeger**, **Zipkin** und **Elastic APM**.
+- Elastic APM schreibt Traces **in Elasticsearch**.
+- Kibana visualisiert (sofern aktiviert) Traces aus Elasticsearch.
 
-### 3. Project Customization
-1. Search for TODOs in the project and update the following:
-    - Rename `group-id` and `artifact-id` in `pom.xml`
-    - Update `name` in `application.yaml`
-    - Ensure all names match your GitHub project name
-2. Rename packages and classes as needed.
 
-### 4. GitHub Configuration
-1. Add the following secrets in your GitHub project Action settings:
-    - `DOCKER_USER`
-    - `DOCKER_ACCESS_TOKEN`
-    - `SONAR_TOKEN`: a Sonar Token generated in https://sonarcloud.io. Sonar Analysis Method: Automatic Analysis disabled. 
-    - `RELEASE_TOKEN`: A GitHub Personal Access Token with permissions to push to the master branch
-    - To create this token:
-        1. Go to GitHub Settings > Developer settings > Personal access tokens
-        2. Click "Generate new token" (classic)
-        3. Give it a descriptive name (e.g., "Release Token for [Your Project Name]")
-        4. Set the expiration as needed
-        5. Select at least these scopes: `repo`, `write:packages`
-        6. Generate the token and copy it immediately
-    - Add this token as a secret named `RELEASE_TOKEN` in your repository settings
-2. Add the following vars in your GitHub project Action settings:
-    - CI_USER and set value to dboeckli@gmail.com
-    - CI_USER_EMAIL set value to dboeckli@gmail.com
-3. Add the following secrets in your GitHub project Dependent Bot settings:
-   - `DOCKER_USER`
-   - `DOCKER_ACCESS_TOKEN`
-
-### 5. Build and Deployment
-1. Trigger a rebuild in GitHub Actions.
-2. Upon successful build:
-    - A Docker image will be pushed to GitHub Packages and Docker Hub.
-    - Access your Docker Hub repository: https://hub.docker.com/repositories/domboeckli
-    - Change the Docker Hub image visibility from private to public to unlock it.
-
-### 6. Release
-To create a new release:
-
-1. Ensure you are on the main branch and it is up to date:
-2. Run the release workflow:
-- Go to your GitHub repository
-- Navigate to the "Actions" tab
-- Select the "Maven Release" workflow
-- Click "Run workflow"
-- Choose the main branch and click "Run workflow"
-3. The workflow will:
-- Check if you're on the main branch
-- Verify that the current version is a SNAPSHOT
-- Prepare the release (update versions, create tag)
-- Perform the release (build, test, and deploy)
-- Push changes back to the repository
-4. After the workflow completes successfully:
-- A new release tag will be created in your repository
-- The project version in pom.xml will be updated
-- A new Docker image with the release version will be pushed to Docker Hub
-5. Verify the release:
-- Check the releases page on GitHub
-- Confirm the new version in pom.xml on the main branch
-- Verify the new Docker image on Docker Hub
-
-Note: Ensure all required secrets (RELEASE_TOKEN, DOCKER_USER, DOCKER_ACCESS_TOKEN) are properly set in your GitHub repository settings before running the release workflow.
-
-## Deployment with Kubernetes
-
-To run maven filtering for destination target/k8s
-```bash
-mvn clean install -DskipTests 
 ```
 
-Deployment goes into the default namespace.
+#### Metrics
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       Anwendung (spring-with-otel)                          │
+└────────────────┬────────────────────────────────────────────────────────────┘
+                 │  OTLP (Metrics)
+                 v
+       ┌─────────┴───────────────────────────────────────────────────────────┐
+       │                          OTEL COLLECTOR                             │
+       │                          (otel-collector)                           │
+       │             Metrics Exporter: otel-collector:8889                   │
+       └───────────────┬───────────────────────────────┬─────────────────────┘
+                       │                               │
+                       │                               │
+                       v                               v
+         ┌──────────────────────────┐        ┌──────────────────────────┐
+         │       PROMETHEUS         │        │     ELASTIC APM SERVER   │
+         │     localhost:9090       │        │      apm-server:8200     │
+         │   scrapt 8889 (Collector)│        └───────────────┬──────────┘
+         └──────────────────────────┘                        │
+                                                             │ schreibt Metriken
+                                                             v
+                                                ┌──────────────────────────┐
+                                                │      ELASTICSEARCH       │
+                                                │     localhost:9200       │
+                                                └───────────────┬──────────┘
+                                                                │
+                                                                v
+                                                        ┌───────────────────┐
+                                                        │      KIBANA       │
+                                                        │   localhost:5601  │
+                                                        └───────────────────┘
 
-To deploy all resources:
-```bash
-kubectl apply -f target/k8s/
+Hinweise:
+- Metriken gehen an Prometheus **und** an Elastic APM.
+- Elastic APM schreibt nach Elasticsearch.
+- Kibana visualisiert Daten aus Elasticsearch.
 ```
 
-To remove all resources:
-```bash
-kubectl delete -f target/k8s/
+#### Logs
+```
+┌──────────────────────────────────────────────────────────┐
+│                  Anwendung (spring-with-otel)            │
+└───────────────┬──────────────────────────────────────────┘
+                │  OTLP (Logs)
+                v
+      ┌─────────────────────────────────────────────────────┐
+      │                   OTEL COLLECTOR                    │
+      │                   (otel-collector)                  │
+      └──────────────────────────────┬──────────────────────┘
+                                     │
+                                     v
+                        ┌──────────────────────────┐
+                        │      ELASTICSEARCH       │
+                        │     localhost:9200       │
+                        └───────────────┬──────────┘
+                                        │
+                                        v
+                                ┌───────────────────┐
+                                │      KIBANA       │
+                                │   localhost:5601  │
+                                └───────────────────┘
+
+
 ```
 
-Check
-```bash
-kubectl get deployments -o wide
-kubectl get pods -o wide
-```
+**App → Otel Collector**
+Die Spring Boot Anwendung exportiert **Traces, Metrics und Logs** per **OTLP HTTP** an den Otel Collector:
 
-You can use the actuator rest call to verify via port 30080
+- OTLP HTTP Endpoint der App: `http://localhost:4318` (aus Sicht des Hosts)
+- Per Port-Mapping geht das an den Collector-Container (`otel-collector:4318`).
 
-## Deployment with Helm
+- **Otel Collector → Backends**
 
-Be aware that we are using a different namespace here (not default).
+  Der Collector verteilt die Telemetriedaten wie folgt:
 
-To run maven filtering for destination target/helm
-```bash
-mvn clean install -DskipTests 
-```
+    - **Traces**
+        - → Jaeger (`jaeger:4317`)
+        - → Zipkin (`zipkin:9411`)
+        - → Elastic APM Server (`apm-server:8200`, OTLP HTTP)
 
-Go to the directory where the tgz file has been created after 'mvn install'
-```powershell
-cd target/helm/repo
-```
+    - **Metrics**
+        - → Prometheus-Exporter (`otel-collector:8889`)  
+          Prometheus scrapt diesen Endpoint.
+        - → Elastic APM Server (`apm-server:8200`, OTLP HTTP)
 
-unpack
-```powershell
-$file = Get-ChildItem -Filter *.tgz | Select-Object -First 1
-tar -xvf $file.Name
-```
+    - **Logs**
+        - → Elasticsearch (`elasticsearch:9200`), Darstellung über Kibana.
 
-install
-```powershell
-$APPLICATION_NAME = Get-ChildItem -Directory | Where-Object { $_.LastWriteTime -ge $file.LastWriteTime } | Select-Object -ExpandProperty Name
-helm upgrade --install $APPLICATION_NAME ./$APPLICATION_NAME --namespace spring-with-otel --create-namespace --wait --timeout 8m --debug --render-subchart-notes
-```
+- **Prometheus → Otel Collector**
 
-show logs
-```powershell
-kubectl get pods -l app.kubernetes.io/name=$APPLICATION_NAME -n spring-with-otel
-```
-replace $POD with pods from the command above
-```powershell
-kubectl logs $POD -n spring-with-otel --all-containers
-```
+  Prometheus ist ausschließlich mit dem **Collector** verbunden:
 
-test
-```powershell
-helm test $APPLICATION_NAME --namespace spring-with-otel --logs
-```
+    - scrape target: `otel-collector:8889`
+    - die Anwendung selbst wird **nicht** direkt über `/actuator/prometheus` gescrapt.
 
-uninstall
-```powershell
-helm uninstall $APPLICATION_NAME --namespace spring-with-otel
-```
+### Dienste und UIs
 
-delete all
-```powershell
-kubectl delete all --all -n spring-with-otel
-```
+folgende Ui's stehen zur Verfügung:
 
-create busybox sidecar
-```powershell
-kubectl run busybox-test --rm -it --image=busybox:1.36 --namespace=spring-with-otel --command -- sh
-```
+- **Prometheus** – Metriken
+    - URL: `http://localhost:9090`
+    - Unter `Status → Targets` sollte `otel-collector` als „UP“ erscheinen.
 
-You can use the actuator rest call to verify via port 30080
+- **Jaeger** – Traces
+    - URL: `http://localhost:16686`
+    - Suche nach Services wie `spring-with-otel`.
 
-## Additional Information
-- The initial build in GitHub may fail. Follow the steps above to resolve any issues.
-- Ensure all TODOs are addressed before considering the setup complete.
-- For any issues or improvements, please create a GitHub issue in the project repository.
+- **Zipkin** – Traces (Alternative UI)
+    - URL: `http://localhost:9411`
 
-## Contributing
-Contributions to improve this template are welcome. Please follow the standard GitHub flow:
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a new Pull Request
+- **Elasticsearch + Kibana** – Logs und (abhängig von APM-Konfiguration) Metriken/Traces
+    - Elasticsearch: `http://localhost:9200`
+    - Kibana: `http://localhost:5601`
+
+- **Elastic APM Server** – OTLP-Endpunkt für APM
+    - OTLP HTTP: `http://localhost:8200` (per Port-Mapping auf `apm-server:8200`)

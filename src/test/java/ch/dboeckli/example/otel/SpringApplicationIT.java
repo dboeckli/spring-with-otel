@@ -9,7 +9,14 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
+@SpringBootTest(
+    useMainMethod = SpringBootTest.UseMainMethod.ALWAYS,
+    properties = {
+        "otel.traces.exporter=none",
+        "otel.metrics.exporter=none",
+        "otel.logs.exporter=none"
+    }
+)
 @Slf4j
 @ActiveProfiles("local")
 class SpringApplicationIT {
