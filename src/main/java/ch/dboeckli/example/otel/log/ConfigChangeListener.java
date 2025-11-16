@@ -17,7 +17,7 @@ import java.util.stream.StreamSupport;
 @Slf4j
 public class ConfigChangeListener {
 
-    private static final List<String> PASSWORD_KEY_LIST  = Arrays.asList("jwt.key-value", "password", "credentials", "secret");
+    private static final List<String> PASSWORD_KEY_LIST = Arrays.asList("jwt.key-value", "password", "credentials", "secret");
 
     @EventListener
     public void handleContextRefresh(ContextRefreshedEvent event) {

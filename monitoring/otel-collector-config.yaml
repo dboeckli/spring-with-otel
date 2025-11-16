@@ -18,14 +18,21 @@ processors:
 exporters:
   prometheus:
     endpoint: 0.0.0.0:8889
+
   # Traces zu Jaeger (All-in-One hat OTLP gRPC am 4317)
   otlp:
     endpoint: jaeger:4317
     tls:
       insecure: true
+
+  # Elastic APM Server (OTLP HTTP)
+  otlphttp/elastic-apm:
+    endpoint: http://apm-server:8200
+
   # Logs zu Elasticsearch
   elasticsearch:
     endpoints: [ "http://elasticsearch:9200" ]
+
   # Zusätzlich: Traces zu Zipkin exportieren (Collector konvertiert OTLP -> Zipkin)
   zipkin:
     endpoint: http://zipkin:9411/api/v2/spans
@@ -36,11 +43,11 @@ service:
     traces:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [otlp, zipkin]
+      exporters: [otlp, zipkin, otlphttp/elastic-apm]
     metrics:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [prometheus]
+      exporters: [prometheus, otlphttp/elastic-apm]
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
