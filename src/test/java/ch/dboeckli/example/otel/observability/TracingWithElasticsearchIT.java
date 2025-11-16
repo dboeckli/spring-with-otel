@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ActiveProfiles("local")
 @Slf4j
 @AutoConfigureObservability
-class LoggingWithElasticsearchIT {
+class TracingWithElasticsearchIT {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     @Autowired
@@ -36,24 +36,27 @@ class LoggingWithElasticsearchIT {
     int port;
 
     @Test
-    void elasticsearch_has_logs_after_hello_call() {
-        // 1) Aktion auslösen, die Logs erzeugt
+    void elasticsearch_has_traces_after_hello_call() {
+        // 1) Aktion auslösen, die Traces erzeugt
         String helloUrl = "http://localhost:" + port + "/hello";
         ResponseEntity<String> helloResponse = restTemplate.getForEntity(helloUrl, String.class);
         log.info("Hello response: status={}, body={}", helloResponse.getStatusCode(), helloResponse.getBody());
         assertEquals(HttpStatus.OK, helloResponse.getStatusCode());
 
-        // 2) Elasticsearch Query: neueste Dokumente in den letzten Minuten
-        final String esSearchUrl = "http://localhost:9200/_search";
+        // 2) Elasticsearch Query: Trace-Dokumente der letzten Minuten
+        // APM legt Traces typischerweise in Indizes mit Prefix "traces-" ab.
+        final String esSearchUrl = "http://localhost:9200/traces-*/_search";
 
         String queryJson = """
             {
-              "size": 5,
+              "size": 20,
               "sort": [{ "@timestamp": { "order": "desc" } }],
               "query": {
                 "bool": {
                   "filter": [
-                    { "range": { "@timestamp": { "gte": "now-5m" } } }
+                    { "range": { "@timestamp": { "gte": "now-5m" } } },
+                    { "term":  { "processor.event": "span" } },
+                    { "term":  { "service.name": "spring-with-otel" } }
                   ]
                 }
               }
@@ -70,22 +73,43 @@ class LoggingWithElasticsearchIT {
                 .atMost(Duration.ofSeconds(90))
                 .pollDelay(Duration.ofSeconds(3))
                 .pollInterval(Duration.ofSeconds(3))
-                .conditionEvaluationListener(c -> log.info("Polling Elasticsearch ({}ms): {}", c.getRemainingTimeInMS(), esSearchUrl))
-                .until(() -> restTemplate.exchange(esSearchUrl, HttpMethod.GET, request, String.class),
-                    r -> r.getStatusCode().is2xxSuccessful()
-                        && r.getBody() != null
-                        && containsHits(r.getBody()));
+                .conditionEvaluationListener(c -> log.info("Polling Elasticsearch traces ({}ms): {}", c.getRemainingTimeInMS(), esSearchUrl))
+                .until(
+                    () -> restTemplate.exchange(esSearchUrl, HttpMethod.GET, request, String.class),
+                    r -> {
+                        log.info("Elasticsearch traces poll response: status={}, body={}",
+                            r.getStatusCode(), pretty(r.getBody()));
 
-        log.info("Elasticsearch response: {}", pretty(resp.getBody()));
+                        return r.getStatusCode().is2xxSuccessful()
+                            && r.getBody() != null
+                            && containsTraceHits(r.getBody());
+                    }
+                );
+
+        log.info("Elasticsearch traces final response: {}", pretty(resp.getBody()));
     }
 
-    private boolean containsHits(String body) {
+    private boolean containsTraceHits(String body) {
         try {
             JsonNode root = OBJECT_MAPPER.readTree(body);
             JsonNode hits = root.path("hits").path("hits");
-            return hits.isArray() && !hits.isEmpty();
+            if (!hits.isArray() || hits.isEmpty()) {
+                return false;
+            }
+            // Optional: einen passenden Span für /hello finden
+            for (JsonNode hit : hits) {
+                JsonNode source = hit.path("_source");
+                JsonNode spanName = source.path("span.name");
+                if (spanName.isTextual() && spanName.asText().contains("/hello")) {
+                    log.info("Found span for /hello in Elasticsearch: {}", pretty(source.toString()));
+                    return true;
+                }
+            }
+            // Wenn keine /hello-Spans, aber generell Traces da sind, trotzdem true?
+            // Falls du wirklich nur /hello haben willst, entferne die folgende Zeile:
+            return !hits.isEmpty();
         } catch (Exception e) {
-            log.warn("Failed to parse Elasticsearch JSON", e);
+            log.warn("Failed to parse Elasticsearch traces JSON", e);
             return false;
         }
     }

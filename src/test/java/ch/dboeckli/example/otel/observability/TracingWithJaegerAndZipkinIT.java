@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -17,6 +18,7 @@ import java.time.Duration;
 import java.util.List;
 
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -29,16 +31,19 @@ import static org.awaitility.Awaitility.await;
 @AutoConfigureObservability
 public class TracingWithJaegerAndZipkinIT {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     @Autowired
     TestRestTemplate restTemplate;
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    @LocalServerPort
+    int port;
 
     @Test
     void jaeger_has_traces_after_hello_call() {
-        // Einen Request triggern, damit ein Trace erzeugt wird
-        ResponseEntity<String> hello = restTemplate.getForEntity("http://localhost:8080/api/hello", String.class);
-        log.info("Hello response (for traces): status={} body={}", hello.getStatusCode(), hello.getBody());
+        // 1) Aktion auslösen, die Metriken erzeugt
+        String helloUrl = "http://localhost:" + port + "/hello";
+        ResponseEntity<String> helloResponse = restTemplate.getForEntity(helloUrl, String.class);
+        log.info("Hello response: status={}, body={}", helloResponse.getStatusCode(), helloResponse.getBody());
+        assertEquals(HttpStatus.OK, helloResponse.getStatusCode());
 
         String service = "spring-with-otel";
         final String jaegerSearchUrl =
@@ -65,9 +70,11 @@ public class TracingWithJaegerAndZipkinIT {
 
     @Test
     void zipkin_has_traces_after_hello_call() {
-        // Einen Request triggern, damit ein Trace erzeugt wird
-        ResponseEntity<String> hello = restTemplate.getForEntity("http://localhost:8080/api/hello", String.class);
-        log.info("Hello response (for traces): status={} body={}", hello.getStatusCode(), hello.getBody());
+        // 1) Aktion auslösen, die Metriken erzeugt
+        String helloUrl = "http://localhost:" + port + "/hello";
+        ResponseEntity<String> helloResponse = restTemplate.getForEntity(helloUrl, String.class);
+        log.info("Hello response: status={}, body={}", helloResponse.getStatusCode(), helloResponse.getBody());
+        assertEquals(HttpStatus.OK, helloResponse.getStatusCode());
 
         // Zipkin V2 API: Suche der letzten Traces (JSON-Array, jeder Eintrag ist ein Trace mit Spans)
         String zipkinQueryUrl = "http://localhost:9411/api/v2/traces?limit=20&lookback=" + (60 * 60 * 1000);
@@ -94,7 +101,7 @@ public class TracingWithJaegerAndZipkinIT {
         try {
             JsonNode root = OBJECT_MAPPER.readTree(body);
             JsonNode data = root.get("data");
-            return data != null && data.isArray() && data.size() > 0;
+            return data != null && data.isArray() && !data.isEmpty();
         } catch (Exception e) {
             log.warn("Failed to parse Jaeger JSON", e);
             return false;
@@ -104,7 +111,7 @@ public class TracingWithJaegerAndZipkinIT {
     private boolean containsZipkinTraces(String body) {
         try {
             JsonNode root = OBJECT_MAPPER.readTree(body);
-            return root.isArray() && root.size() > 0;
+            return root.isArray() && !root.isEmpty();
         } catch (Exception e) {
             log.warn("Failed to parse Zipkin JSON", e);
             return false;

@@ -1,16 +1,14 @@
 package ch.dboeckli.example.otel.rest;
 
 
-import nl.altindag.log.LogCaptor;
-import nl.altindag.log.model.LogEvent;
-
-import org.junit.jupiter.api.Test;
-
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import lombok.extern.slf4j.Slf4j;
+import nl.altindag.log.LogCaptor;
+import nl.altindag.log.model.LogEvent;
+import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -33,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
     }
 )
 @ActiveProfiles("local")
+@Slf4j
 class HelloControllerIT {
 
     @LocalServerPort
@@ -58,7 +57,8 @@ class HelloControllerIT {
             String url = "http://localhost:" + port + "/hello";
             restTemplate.getForEntity(url, String.class);
 
-            List<LogEvent> logEvents =  logCaptor.getLogEvents();
+            List<LogEvent> logEvents = logCaptor.getLogEvents();
+            log.info("Log events: {}", logEvents);
 
             assertAll(
                 () -> assertNotNull(logEvents),

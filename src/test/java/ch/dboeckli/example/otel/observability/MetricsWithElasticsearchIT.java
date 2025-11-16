@@ -21,13 +21,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
-        "spring.docker.compose.skip.in-tests=false"
+        "spring.docker.compose.skip.in-tests=false",
+        // Micrometer-OTLP (für Spring) – kann bleiben, wird hier aber praktisch nicht verwendet
+        "management.otlp.metrics.export.step=5s",
+        // WICHTIG: OpenTelemetry-Metrics-Export-Intervall (Standard: 60000 ms)
+        "otel.metric.export.interval=5000"
     }
 )
 @ActiveProfiles("local")
 @Slf4j
 @AutoConfigureObservability
-class LoggingWithElasticsearchIT {
+class MetricsWithElasticsearchIT {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     @Autowired
@@ -36,24 +40,26 @@ class LoggingWithElasticsearchIT {
     int port;
 
     @Test
-    void elasticsearch_has_logs_after_hello_call() {
-        // 1) Aktion auslösen, die Logs erzeugt
+    void elasticsearch_has_metrics_after_hello_call() {
+        // 1) Aktion auslösen, die Metriken erzeugt
         String helloUrl = "http://localhost:" + port + "/hello";
         ResponseEntity<String> helloResponse = restTemplate.getForEntity(helloUrl, String.class);
         log.info("Hello response: status={}, body={}", helloResponse.getStatusCode(), helloResponse.getBody());
         assertEquals(HttpStatus.OK, helloResponse.getStatusCode());
 
-        // 2) Elasticsearch Query: neueste Dokumente in den letzten Minuten
-        final String esSearchUrl = "http://localhost:9200/_search";
+        // 2) Elasticsearch Query: Metrik-Dokumente der letzten Minuten mit http.server.request.duration
+        final String esSearchUrl = "http://localhost:9200/metrics-*/_search";
 
         String queryJson = """
             {
-              "size": 5,
+              "size": 50,
               "sort": [{ "@timestamp": { "order": "desc" } }],
               "query": {
                 "bool": {
                   "filter": [
-                    { "range": { "@timestamp": { "gte": "now-5m" } } }
+                    { "range": { "@timestamp": { "gte": "now-5m" } } },
+                    { "term":  { "processor.event": "metric" } },
+                    { "exists": { "field": "http.server.request.duration" } }
                   ]
                 }
               }
@@ -67,25 +73,43 @@ class LoggingWithElasticsearchIT {
 
         ResponseEntity<String> resp =
             await()
-                .atMost(Duration.ofSeconds(90))
-                .pollDelay(Duration.ofSeconds(3))
-                .pollInterval(Duration.ofSeconds(3))
-                .conditionEvaluationListener(c -> log.info("Polling Elasticsearch ({}ms): {}", c.getRemainingTimeInMS(), esSearchUrl))
-                .until(() -> restTemplate.exchange(esSearchUrl, HttpMethod.GET, request, String.class),
-                    r -> r.getStatusCode().is2xxSuccessful()
-                        && r.getBody() != null
-                        && containsHits(r.getBody()));
+                .atMost(Duration.ofSeconds(120))
+                .pollDelay(Duration.ofSeconds(5))
+                .pollInterval(Duration.ofSeconds(5))
+                .conditionEvaluationListener(c -> log.info("Polling Elasticsearch metrics ({}ms): {}", c.getRemainingTimeInMS(), esSearchUrl))
+                .until(
+                    () -> restTemplate.exchange(esSearchUrl, HttpMethod.GET, request, String.class),
+                    r -> {
+                        log.info("Elasticsearch metrics poll response: status={}, body={}",
+                            r.getStatusCode(), pretty(r.getBody()));
 
-        log.info("Elasticsearch response: {}", pretty(resp.getBody()));
+                        return r.getStatusCode().is2xxSuccessful()
+                            && r.getBody() != null
+                            && containsHttpServerRequestDuration(r.getBody());
+                    }
+                );
+
+        log.info("Elasticsearch metrics final response: {}", pretty(resp.getBody()));
     }
 
-    private boolean containsHits(String body) {
+    private boolean containsHttpServerRequestDuration(String body) {
         try {
             JsonNode root = OBJECT_MAPPER.readTree(body);
             JsonNode hits = root.path("hits").path("hits");
-            return hits.isArray() && !hits.isEmpty();
+            if (!hits.isArray() || hits.isEmpty()) {
+                return false;
+            }
+            for (JsonNode hit : hits) {
+                JsonNode source = hit.path("_source");
+                if (source.has("http.server.request.duration")) {
+                    log.info("Found http.server.request.duration metric document: {}",
+                        pretty(source.toString()));
+                    return true;
+                }
+            }
+            return false;
         } catch (Exception e) {
-            log.warn("Failed to parse Elasticsearch JSON", e);
+            log.warn("Failed to parse Elasticsearch metrics JSON", e);
             return false;
         }
     }

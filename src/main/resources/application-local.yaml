@@ -48,21 +48,24 @@ management:
     git:
       enabled: true
       mode: full
+
+  # --- OpenTelemetry / OTLP ---
   tracing:
-    enabled: false
+    enabled: true   # enable tracing with OpenTelemetry
   otlp:
     tracing:
-      endpoint: http://localhost:4318/v1/traces
+      endpoint: http://localhost:4318/v1/traces  # Collector
       export:
-        enabled: false
+        enabled: true  # Traces to Collector
     metrics:
       export:
-        url: http://localhost:4318/v1/metrics
-        enabled: false
+        url: http://localhost:4318/v1/metrics     # Collector
+        enabled: true  # Metrics to Collector
+        step: 60s
     logging:
-      endpoint: http://localhost:4318/v1/logs
+      endpoint: http://localhost:4318/v1/logs     # Collector
       export:
-        enabled: false
+        enabled: true  # Logs to Collector
 
 otel:
   service:
@@ -70,6 +73,15 @@ otel:
   exporter:
     otlp:
       endpoint: http://localhost:4318
+  metrics:
+    exporter: otlp
+  traces:
+    exporter: otlp
+  logs:
+    exporter: otlp
+  instrumentation:
+    logback-mdc:
+      add-baggage: true
 
 logging:
   level:
