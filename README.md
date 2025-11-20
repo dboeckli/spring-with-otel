@@ -54,14 +54,14 @@ Hinweise:
 └────────────────┬──────────────────────────────────────────────────────────────────────────┘
                  │  Push OTLP (Metrics)
                  v
-       ┌─────────┴───────────────────────────────────────────────────────────┐
+       ┌─────────────────────────────────────────────────────────────────────┐
        │                          OTEL COLLECTOR                             │
        │                          (otel-collector)                           │
        │             Metrics Exporter: otel-collector:8889                   │
-       └───────────────┬───────────────────────────────┬─────────────────────┘
-   Pull OTLP (Metrics) │                               │  Push OTLP (Metrics)
+       └───────────────────────────────────────────────┬─────────────────────┘
+   Pull OTLP (Metrics) ^                               │  Push OTLP (Metrics)
                        │                               │
-                       v                               v
+                       │                               v
          ┌──────────────────────────┐        ┌──────────────────────────┐
          │       PROMETHEUS         │        │     ELASTIC APM SERVER   │
          │     localhost:9090       │        │      apm-server:8200     │
@@ -161,7 +161,10 @@ folgende Ui's stehen zur Verfügung:
 
 - **Elasticsearch + Kibana** – Logs und (abhängig von APM-Konfiguration) Metriken/Traces
     - Elasticsearch: `http://localhost:9200`
-    - Kibana: `http://localhost:5601`
+    - Kibana: `http://localhost:5601`: 
+      Go to: Stack Management -> Data views -> APM
+      search for Index pattern:
+      traces-apm*,apm-*,traces-*.otel-*,logs-apm*,apm-*,logs-*.otel-*,metrics-apm*,apm-*,metrics-*.otel-*
 
 - **Elastic APM Server** – OTLP-Endpunkt für APM
     - OTLP HTTP: `http://localhost:8200` (per Port-Mapping auf `apm-server:8200`)
