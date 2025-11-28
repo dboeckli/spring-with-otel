@@ -9,16 +9,16 @@ Siehe auch: https://last9.io/blog/opentelemetry-for-spring/
 
 #### Traces
 ```
-┌────────────────────────────────────────────────────────────────────────────┐
-│                       Anwendung (spring-with-otel)                          │
-└────────────────┬────────────────────────────────────────────────────────────┘
-                 │  OTLP (Traces)
-                 v
-       ┌─────────┴───────────────────────────────────────────────────────────────────────┐
+┌───────────────────────────────────────────────────────────────────────────────────────────┐
+│                       Anwendung (spring-with-otel) with opentelemetry-spring-boot-starter │
+└──────────────────────────────────────────────┬────────────────────────────────────────────┘
+                                               │  Push OTLP (Traces)
+                                               v
+       ┌─────────────────────────────────────────────────────────────────────────────────┐
        │                           OTEL COLLECTOR                                        │
        │                           (otel-collector)                                      │
        └───────────────┬──────────────────────────────┬────────────────────────┬─────────┘
-                       │                              │                        │
+           Push Traces │                              │                        │
                        │                              │                        │
                        v                              v                        v
          ┌─────────────────────────┐     ┌─────────────────────────┐   ┌──────────────────────────┐
@@ -26,7 +26,7 @@ Siehe auch: https://last9.io/blog/opentelemetry-for-spring/
          │       jaeger:4317       │     │       zipkin:9411       │   │      apm-server:8200     │
          └─────────────────────────┘     └─────────────────────────┘   └───────────────┬──────────┘
                                                                                        │
-                                                                                       │ schreibt Traces
+                                                                                       │ Push Traces
                                                                                        v
                                                                            ┌──────────────────────────┐
                                                                            │       ELASTICSEARCH      │
@@ -49,25 +49,25 @@ Hinweise:
 
 #### Metrics
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                       Anwendung (spring-with-otel)                          │
-└────────────────┬────────────────────────────────────────────────────────────┘
-                 │  OTLP (Metrics)
+┌───────────────────────────────────────────────────────────────────────────────────────────┐
+│                       Anwendung (spring-with-otel) with opentelemetry-spring-boot-starter │
+└────────────────┬──────────────────────────────────────────────────────────────────────────┘
+                 │  Push OTLP (Metrics)
                  v
-       ┌─────────┴───────────────────────────────────────────────────────────┐
+       ┌─────────────────────────────────────────────────────────────────────┐
        │                          OTEL COLLECTOR                             │
        │                          (otel-collector)                           │
        │             Metrics Exporter: otel-collector:8889                   │
-       └───────────────┬───────────────────────────────┬─────────────────────┘
+       └───────────────────────────────────────────────┬─────────────────────┘
+   Pull OTLP (Metrics) ^                               │  Push OTLP (Metrics)
                        │                               │
-                       │                               │
-                       v                               v
+                       │                               v
          ┌──────────────────────────┐        ┌──────────────────────────┐
          │       PROMETHEUS         │        │     ELASTIC APM SERVER   │
          │     localhost:9090       │        │      apm-server:8200     │
          │   scrapt 8889 (Collector)│        └───────────────┬──────────┘
          └──────────────────────────┘                        │
-                                                             │ schreibt Metriken
+                                                             │ Push Metrics
                                                              v
                                                 ┌──────────────────────────┐
                                                 │      ELASTICSEARCH       │
@@ -83,21 +83,22 @@ Hinweise:
 Hinweise:
 - Metriken gehen an Prometheus **und** an Elastic APM.
 - Elastic APM schreibt nach Elasticsearch.
+- Prometheus scrapt (pulled) diese Daten von dem Collector.
 - Kibana visualisiert Daten aus Elasticsearch.
 ```
 
 #### Logs
 ```
-┌──────────────────────────────────────────────────────────┐
-│                  Anwendung (spring-with-otel)            │
-└───────────────┬──────────────────────────────────────────┘
-                │  OTLP (Logs)
+┌───────────────────────────────────────────────────────────────────────────────────────────┐
+│                  Anwendung (spring-with-otel-starter) opentelemetry-spring-boot-starter   │
+└───────────────┬───────────────────────────────────────────────────────────────────────────┘
+                │  Push OTLP (Logs)
                 v
       ┌─────────────────────────────────────────────────────┐
       │                   OTEL COLLECTOR                    │
       │                   (otel-collector)                  │
       └──────────────────────────────┬──────────────────────┘
-                                     │
+                                     │  Push OTLP (Logs)
                                      v
                         ┌──────────────────────────┐
                         │      ELASTICSEARCH       │
@@ -160,7 +161,10 @@ folgende Ui's stehen zur Verfügung:
 
 - **Elasticsearch + Kibana** – Logs und (abhängig von APM-Konfiguration) Metriken/Traces
     - Elasticsearch: `http://localhost:9200`
-    - Kibana: `http://localhost:5601`
+    - Kibana: `http://localhost:5601`: 
+      Go to: Stack Management -> Data views -> APM
+      search for Index pattern:
+      traces-apm*,apm-*,traces-*.otel-*,logs-apm*,apm-*,logs-*.otel-*,metrics-apm*,apm-*,metrics-*.otel-*
 
 - **Elastic APM Server** – OTLP-Endpunkt für APM
     - OTLP HTTP: `http://localhost:8200` (per Port-Mapping auf `apm-server:8200`)
