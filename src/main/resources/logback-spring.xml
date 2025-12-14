@@ -2,6 +2,11 @@
     <springProperty scope="context" name="application_name" source="spring.application.name"/>
 
     <appender name="jsonConsoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>NEUTRAL</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <customFields>{"app_name":"${application_name}"}</customFields>
             <fieldNames>
@@ -33,9 +38,6 @@
 
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
-    </root>
-
-    <logger name="org.zalando.logbook.Logbook" level="TRACE" additivity="false">
         <appender-ref ref="jsonConsoleAppender" />
-    </logger>
+    </root>
 </configuration>
