@@ -35,7 +35,7 @@ services:
     restart: unless-stopped
 
   prometheus:
-    image: prom/prometheus:v3.8.0
+    image: prom/prometheus:v3.8.1
     container_name: prometheus
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
@@ -46,7 +46,7 @@ services:
     restart: unless-stopped
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.3
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
@@ -60,7 +60,7 @@ services:
     restart: unless-stopped
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:9.2.2
+    image: docker.elastic.co/kibana/kibana:9.2.3
     container_name: kibana
     ports:
       - "5601:5601"
@@ -71,7 +71,7 @@ services:
     restart: unless-stopped
 
   apm-server:
-    image: docker.elastic.co/apm/apm-server:9.2.2
+    image: docker.elastic.co/apm/apm-server:9.2.3
     container_name: apm-server
     depends_on:
       - elasticsearch
