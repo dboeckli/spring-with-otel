@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.8</version>
+        <version>3.5.9</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -45,7 +45,7 @@
         <editorconfig-maven-plugin.version>0.2.0</editorconfig-maven-plugin.version>
         <helm.plugin.version>6.17.0</helm.plugin.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
-        <exec-maven-plugin.version>3.6.2</exec-maven-plugin.version>
+        <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
         <merge-yaml-plugin.version>1.4</merge-yaml-plugin.version>
 
         <!-- our dependencies -->
