@@ -351,6 +351,15 @@ jobs:
           set -o nounset     # abort on unbound variable
           set -o errexit     # abort on nonzero exit status
           
+          # Check if required parameters are set
+          required_params=("SONAR_TOKEN" "ORGANIZATION")
+          for param in "${required_params[@]}"; do
+            if [ -z "${!param}" ]; then
+              echo "::error::Required parameter $param is not set"
+              exit 1
+            fi
+          done
+          
           if [[ "${BRANCH_NAME}" == "master" ||  "${BRANCH_NAME}" == "main" ]]; then
             mvn -B org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
                   -s $GITHUB_WORKSPACE/settings.xml \
