@@ -4,7 +4,9 @@ metadata:
   name: "{{ include "application-template.fullname" . }}-test-connection"
   namespace: {{ .Values.global.namespace }}
   labels:
-    {{- include "application-template.labels" . | nindent 4 }}
+    app.kubernetes.io/component: helm-test
+    app.kubernetes.io/name: "{{ include "application-template.fullname" . }}-test-connection"
+    app.kubernetes.io/instance: "{{ .Release.Name }}-test"
   annotations:
     "helm.sh/hook": test
 spec:
