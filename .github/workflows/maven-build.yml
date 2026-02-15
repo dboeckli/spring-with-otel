@@ -351,7 +351,7 @@ jobs:
           set -o nounset     # abort on unbound variable
           set -o errexit     # abort on nonzero exit status
           
-          # Check if required parameters are set
+          # Check if required parameters are set.
           required_params=("SONAR_TOKEN" "ORGANIZATION")
           for param in "${required_params[@]}"; do
             if [ -z "${!param}" ]; then
