@@ -41,7 +41,7 @@ Siehe auch: https://last9.io/blog/opentelemetry-for-spring/
 
 Hinweise:
 - Traces gehen an **Jaeger**, **Zipkin** und **Elastic APM**.
-- Elastic APM schreibt Traces **in Elasticsearch**.
+- Elastic APM schreibt Traces **in Elasticsearch**
 - Kibana visualisiert (sofern aktiviert) Traces aus Elasticsearch.
 
 
