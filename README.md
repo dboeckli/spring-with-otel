@@ -117,7 +117,7 @@ Hinweise:
 **App → Otel Collector**
 Die Spring Boot Anwendung exportiert **Traces, Metrics und Logs** per **OTLP HTTP** an den Otel Collector:
 
-- OTLP HTTP Endpoint der App: `http://localhost:4318` (aus Sicht des Hosts)
+- OTLP HTTP Endpoint der App: `http://localhost:4318` (aus Sicht des Hosts).
 - Per Port-Mapping geht das an den Collector-Container (`otel-collector:4318`).
 
 - **Otel Collector → Backends**
