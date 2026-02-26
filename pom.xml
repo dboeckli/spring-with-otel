@@ -52,7 +52,7 @@
         <spring-6-rest-mvc-api.version>0.0.1-SNAPSHOT</spring-6-rest-mvc-api.version>
 
         <!-- test dependencies -->
-        <logcaptor.version>2.12.2</logcaptor.version>
+        <logcaptor.version>2.12.3</logcaptor.version>
 
         <!-- Sonar -->
         <sonar-maven-plugin.version>5.5.0.6356</sonar-maven-plugin.version>
