@@ -5,8 +5,6 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import lombok.extern.slf4j.Slf4j;
-import nl.altindag.log.LogCaptor;
-import nl.altindag.log.model.LogEvent;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +16,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static ch.dboeckli.example.otel.rest.HelloController.HELLO_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -49,27 +46,6 @@ class HelloControllerIT {
             () -> assertThat(response.getStatusCode().is2xxSuccessful()).isTrue(),
             () -> assertThat(response.getBody()).isEqualTo("{\"message\":\"hello\"}")
         );
-    }
-
-    @Test
-    void hello_logsMessage() {
-        try (LogCaptor logCaptor = LogCaptor.forClass(HelloController.class)) {
-            String url = "http://localhost:" + port + "/hello";
-            restTemplate.getForEntity(url, String.class);
-
-            List<LogEvent> logEvents = logCaptor.getLogEvents();
-            log.info("Log events: {}", logEvents);
-
-            assertAll(
-                () -> assertNotNull(logEvents),
-                () -> assertEquals(1, logEvents.size()),
-                () -> assertEquals(HelloController.class.getName(), logEvents.getFirst().getLoggerName()),
-                () -> assertEquals(HELLO_MESSAGE, logEvents.getFirst().getMessage()),
-                () -> assertThat(logEvents.getFirst().getDiagnosticContext().get("trace_id")).isNotBlank().matches("[0-9a-f]{32}"),
-                () -> assertThat(logEvents.getFirst().getDiagnosticContext().get("span_id")).as("span_id").isNotBlank().matches("[0-9a-f]{16}"),
-                () -> assertThat(logEvents.getFirst().getDiagnosticContext().get("trace_flags")).as("trace_flags").isNotBlank().matches("[0-9a-f]{2}")
-            );
-        }
     }
 
     @Test
