@@ -148,7 +148,7 @@ jobs:
           settings-path: ${{ github.workspace }} # location for the settings.xml file
 
       - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.13.0
+        uses: helm/kind-action@v1.14.0
 
       - name: Helm workaround
         # This is a workaround because the helm push does not work the standard way. helm login file under ~/.config/helm/registry/config.json is ignored.
@@ -232,7 +232,7 @@ jobs:
           mvn -B -e deploy -s $GITHUB_WORKSPACE/settings.xml
 
       - name: Upload Test Reports
-        uses: actions/upload-artifact@v6.0.0
+        uses: actions/upload-artifact@v7.0.0
         if: failure()
         with:
           name: failsafe-and-surefire-reports
@@ -297,7 +297,7 @@ jobs:
           settings-path: ${{ github.workspace }} # location for the settings.xml file
 
       - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.13.0
+        uses: helm/kind-action@v1.14.0
 
       - name: Run Maven Build
         env:
