@@ -81,7 +81,7 @@ Hinweise:
                                                         └───────────────────┘
 
 Hinweise:
-- Metriken gehen an Prometheus **und** an Elastic APM.
+- Metriken gehen an Prometheus **und** an Elastic APM
 - Elastic APM schreibt nach Elasticsearch.
 - Prometheus scrapt (pulled) diese Daten von dem Collector.
 - Kibana visualisiert Daten aus Elasticsearch.
