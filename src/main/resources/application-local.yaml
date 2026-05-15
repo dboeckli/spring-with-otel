@@ -77,8 +77,12 @@ otel:
     exporter: otlp
   traces:
     exporter: otlp
+    sampler:
+      arg: 1.0
   logs:
     exporter: otlp
   instrumentation:
     logback-mdc:
       add-baggage: true
+      enabled: true
+  propagators: baggage,tracecontext

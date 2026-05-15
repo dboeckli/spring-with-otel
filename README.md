@@ -3,11 +3,12 @@
 ## Observability / Monitoring Setup
 
 Dieses Projekt bringt ein vollständiges Observability-Setup mit **OpenTelemetry** und mehreren Backends mit.
-Siehe auch: https://last9.io/blog/opentelemetry-for-spring/ 
+Siehe auch: https://last9.io/blog/opentelemetry-for-spring/
 
 ### Architekturüberblick
 
 #### Traces
+
 ```
 ┌───────────────────────────────────────────────────────────────────────────────────────────┐
 │                       Anwendung (spring-with-otel) with opentelemetry-spring-boot-starter │
@@ -48,6 +49,7 @@ Hinweise:
 ```
 
 #### Metrics
+
 ```
 ┌───────────────────────────────────────────────────────────────────────────────────────────┐
 │                       Anwendung (spring-with-otel) with opentelemetry-spring-boot-starter │
@@ -88,6 +90,7 @@ Hinweise:
 ```
 
 #### Logs
+
 ```
 ┌───────────────────────────────────────────────────────────────────────────────────────────┐
 │                  Anwendung (spring-with-otel-starter) opentelemetry-spring-boot-starter   │
@@ -119,52 +122,45 @@ Die Spring Boot Anwendung exportiert **Traces, Metrics und Logs** per **OTLP HTT
 
 - OTLP HTTP Endpoint der App: `http://localhost:4318` (aus Sicht des Hosts).
 - Per Port-Mapping geht das an den Collector-Container (`otel-collector:4318`).
-
 - **Otel Collector → Backends**
 
   Der Collector verteilt die Telemetriedaten wie folgt:
 
-    - **Traces**
-        - → Jaeger (`jaeger:4317`)
-        - → Zipkin (`zipkin:9411`)
-        - → Elastic APM Server (`apm-server:8200`, OTLP HTTP)
-
-    - **Metrics**
-        - → Prometheus-Exporter (`otel-collector:8889`)  
-          Prometheus scrapt diesen Endpoint.
-        - → Elastic APM Server (`apm-server:8200`, OTLP HTTP)
-
-    - **Logs**
-        - → Elasticsearch (`elasticsearch:9200`), Darstellung über Kibana.
-
+  - **Traces**
+    - → Jaeger (`jaeger:4317`)
+    - → Zipkin (`zipkin:9411`)
+    - → Elastic APM Server (`apm-server:8200`, OTLP HTTP)
+  - **Metrics**
+    - → Prometheus-Exporter (`otel-collector:8889`)  
+      Prometheus scrapt diesen Endpoint.
+    - → Elastic APM Server (`apm-server:8200`, OTLP HTTP)
+  - **Logs**
+    - → Elasticsearch (`elasticsearch:9200`), Darstellung über Kibana.
 - **Prometheus → Otel Collector**
 
   Prometheus ist ausschließlich mit dem **Collector** verbunden:
 
-    - scrape target: `otel-collector:8889`
-    - die Anwendung selbst wird **nicht** direkt über `/actuator/prometheus` gescrapt.
+  - scrape target: `otel-collector:8889`
+  - die Anwendung selbst wird **nicht** direkt über `/actuator/prometheus` gescrapt.
 
 ### Dienste und UIs
 
 folgende Ui's stehen zur Verfügung:
 
 - **Prometheus** – Metriken
-    - URL: `http://localhost:9090`
-    - Unter `Status → Targets` sollte `otel-collector` als „UP“ erscheinen.
-
+  - URL: `http://localhost:9090`
+  - Unter `Status → Targets` sollte `otel-collector` als „UP“ erscheinen.
 - **Jaeger** – Traces
-    - URL: `http://localhost:16686`
-    - Suche nach Services wie `spring-with-otel`.
-
+  - URL: `http://localhost:16686`
+  - Suche nach Services wie `spring-with-otel`.
 - **Zipkin** – Traces (Alternative UI)
-    - URL: `http://localhost:9411`
-
+  - URL: `http://localhost:9411`
 - **Elasticsearch + Kibana** – Logs und (abhängig von APM-Konfiguration) Metriken/Traces
-    - Elasticsearch: `http://localhost:9200`
-    - Kibana: `http://localhost:5601`: 
-      Go to: Stack Management -> Data views -> APM
-      search for Index pattern:
-      traces-apm*,apm-*,traces-*.otel-*,logs-apm*,apm-*,logs-*.otel-*,metrics-apm*,apm-*,metrics-*.otel-*
-
+  - Elasticsearch: `http://localhost:9200`
+  - Kibana: `http://localhost:5601`:
+    Go to: Stack Management -> Data views -> APM
+    search for Index pattern:
+    traces-apm*,apm-*,traces-*.otel-*,logs-apm*,apm-*,logs-*.otel-*,metrics-apm*,apm-*,metrics-*.otel-*
 - **Elastic APM Server** – OTLP-Endpunkt für APM
-    - OTLP HTTP: `http://localhost:8200` (per Port-Mapping auf `apm-server:8200`)
+  - OTLP HTTP: `http://localhost:8200` (per Port-Mapping auf `apm-server:8200`)
+
