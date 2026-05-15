@@ -24,6 +24,8 @@ spec:
               value: "{{ .Values.global.timezone }}"
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.spring.profiles.active | default "local" }}
+            - name: LOGGING_CONFIG
+              value: classpath:logback-kube.xml
           ports:
             - name: http
               containerPort: {{ .Values.service.targetPort }}
