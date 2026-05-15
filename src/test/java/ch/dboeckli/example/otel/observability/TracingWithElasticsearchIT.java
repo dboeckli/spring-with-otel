@@ -18,20 +18,18 @@ import java.util.List;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "spring.docker.compose.skip.in-tests=false"
-    }
-)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = { "spring.docker.compose.skip.in-tests=false" })
 @ActiveProfiles("local")
 @Slf4j
 @AutoConfigureObservability
 class TracingWithElasticsearchIT {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Autowired
     TestRestTemplate restTemplate;
+
     @LocalServerPort
     int port;
 
@@ -48,43 +46,37 @@ class TracingWithElasticsearchIT {
         final String esSearchUrl = "http://localhost:9200/traces-*/_search";
 
         String queryJson = """
-            {
-              "size": 20,
-              "sort": [{ "@timestamp": { "order": "desc" } }],
-              "query": {
-                "bool": {
-                  "filter": [
-                    { "range": { "@timestamp": { "gte": "now-5m" } } },
-                    { "term":  { "processor.event": "span" } },
-                    { "term":  { "service.name": "spring-with-otel" } }
-                  ]
+                {
+                  "size": 20,
+                  "sort": [{ "@timestamp": { "order": "desc" } }],
+                  "query": {
+                    "bool": {
+                      "filter": [
+                        { "range": { "@timestamp": { "gte": "now-5m" } } },
+                        { "term":  { "processor.event": "span" } },
+                        { "term":  { "service.name": "spring-with-otel" } }
+                      ]
+                    }
+                  }
                 }
-              }
-            }
-            """;
+                """;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(queryJson, headers);
 
-        ResponseEntity<String> resp =
-            await()
-                .atMost(Duration.ofSeconds(90))
-                .pollDelay(Duration.ofSeconds(3))
-                .pollInterval(Duration.ofSeconds(3))
-                .conditionEvaluationListener(c -> log.info("Polling Elasticsearch traces ({}ms): {}", c.getRemainingTimeInMS(), esSearchUrl))
-                .until(
-                    () -> restTemplate.exchange(esSearchUrl, HttpMethod.GET, request, String.class),
-                    r -> {
-                        log.info("Elasticsearch traces poll response: status={}, body={}",
-                            r.getStatusCode(), pretty(r.getBody()));
+        ResponseEntity<String> resp = await().atMost(Duration.ofSeconds(90))
+            .pollDelay(Duration.ofSeconds(3))
+            .pollInterval(Duration.ofSeconds(3))
+            .conditionEvaluationListener(
+                    c -> log.info("Polling Elasticsearch traces ({}ms): {}", c.getRemainingTimeInMS(), esSearchUrl))
+            .until(() -> restTemplate.exchange(esSearchUrl, HttpMethod.GET, request, String.class), r -> {
+                log.info("Elasticsearch traces poll response: status={}, body={}", r.getStatusCode(),
+                        pretty(r.getBody()));
 
-                        return r.getStatusCode().is2xxSuccessful()
-                            && r.getBody() != null
-                            && containsTraceHits(r.getBody());
-                    }
-                );
+                return r.getStatusCode().is2xxSuccessful() && r.getBody() != null && containsTraceHits(r.getBody());
+            });
 
         log.info("Elasticsearch traces final response: {}", pretty(resp.getBody()));
     }
@@ -108,7 +100,8 @@ class TracingWithElasticsearchIT {
             // Wenn keine /hello-Spans, aber generell Traces da sind, trotzdem true?
             // Falls du wirklich nur /hello haben willst, entferne die folgende Zeile:
             return !hits.isEmpty();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.warn("Failed to parse Elasticsearch traces JSON", e);
             return false;
         }
@@ -118,8 +111,10 @@ class TracingWithElasticsearchIT {
         try {
             Object json = OBJECT_MAPPER.readValue(body, Object.class);
             return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return body;
         }
     }
+
 }

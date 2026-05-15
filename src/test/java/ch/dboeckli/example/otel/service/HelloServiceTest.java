@@ -27,20 +27,17 @@ import static org.mockito.Mockito.when;
 class HelloServiceTest {
 
     private InMemorySpanExporter spanExporter;
-    private SdkTracerProvider tracerProvider;
-    private HelloService helloService;
 
+    private SdkTracerProvider tracerProvider;
+
+    private HelloService helloService;
 
     @BeforeEach
     void setUp() {
         spanExporter = InMemorySpanExporter.create();
-        tracerProvider = SdkTracerProvider.builder()
-            .addSpanProcessor(SimpleSpanProcessor.create(spanExporter))
-            .build();
+        tracerProvider = SdkTracerProvider.builder().addSpanProcessor(SimpleSpanProcessor.create(spanExporter)).build();
 
-        OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder()
-            .setTracerProvider(tracerProvider)
-            .build();
+        OpenTelemetrySdk openTelemetry = OpenTelemetrySdk.builder().setTracerProvider(tracerProvider).build();
 
         resetForTest();
         GlobalOpenTelemetry.set(openTelemetry);
@@ -69,49 +66,43 @@ class HelloServiceTest {
 
         List<SpanData> spans = spanExporter.getFinishedSpanItems();
 
-        assertAll(
-            () -> assertThat(result).isEqualTo("Hello from the service"),
-            () -> assertThat(spans).hasSize(1),
+        assertAll(() -> assertThat(result).isEqualTo("Hello from the service"), () -> assertThat(spans).hasSize(1),
 
-            () -> {
-                Assertions.assertNotNull(spans);
-                SpanData span = spans.getFirst();
-                List<EventData> events = span.getEvents();
+                () -> {
+                    Assertions.assertNotNull(spans);
+                    SpanData span = spans.getFirst();
+                    List<EventData> events = span.getEvents();
 
-                assertAll(
-                    // Span‑Basics
-                    () -> assertThat(span.getName()).isEqualTo("process-hello"),
-                    () -> assertThat(span.getKind().name()).isEqualTo("INTERNAL"),
-                    () -> assertThat(span.getStatus().getStatusCode().name()).isEqualTo("OK"),
+                    assertAll(
+                            // Span‑Basics
+                            () -> assertThat(span.getName()).isEqualTo("process-hello"),
+                            () -> assertThat(span.getKind().name()).isEqualTo("INTERNAL"),
+                            () -> assertThat(span.getStatus().getStatusCode().name()).isEqualTo("OK"),
 
-                    // Attribute
-                    () -> assertThat(
-                        span.getAttributes()
-                            .get(io.opentelemetry.api.common.AttributeKey.stringKey("app.custom.service.flag"))
-                    ).isEqualTo("helloFromService"),
+                            // Attribute
+                            () -> assertThat(span.getAttributes()
+                                .get(io.opentelemetry.api.common.AttributeKey.stringKey("app.custom.service.flag")))
+                                .isEqualTo("helloFromService"),
 
-                    // Events allgemein
-                    () -> assertThat(events).hasSize(2),
+                            // Events allgemein
+                            () -> assertThat(events).hasSize(2),
 
-                    // Event‑Namen / Reihenfolge
-                    () -> {
-                        Assertions.assertNotNull(events);
-                        assertThat(events.getFirst().getName()).isEqualTo("service-started");
-                    },
-                    () -> {
-                        Assertions.assertNotNull(events);
-                        assertThat(events.get(1).getName()).isEqualTo("service-completed");
-                    },
+                            // Event‑Namen / Reihenfolge
+                            () -> {
+                                Assertions.assertNotNull(events);
+                                assertThat(events.getFirst().getName()).isEqualTo("service-started");
+                            }, () -> {
+                                Assertions.assertNotNull(events);
+                                assertThat(events.get(1).getName()).isEqualTo("service-completed");
+                            },
 
-                    // Optional: zeitliche Reihenfolge
-                    () -> {
-                        Assertions.assertNotNull(events);
-                        assertThat(events.get(1).getEpochNanos())
-                            .isGreaterThanOrEqualTo(events.get(0).getEpochNanos());
-                    }
-                );
-            }
-        );
+                            // Optional: zeitliche Reihenfolge
+                            () -> {
+                                Assertions.assertNotNull(events);
+                                assertThat(events.get(1).getEpochNanos())
+                                    .isGreaterThanOrEqualTo(events.get(0).getEpochNanos());
+                            });
+                });
     }
 
 }

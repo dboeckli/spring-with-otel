@@ -17,7 +17,8 @@ import java.util.stream.StreamSupport;
 @Slf4j
 public class ConfigChangeListener {
 
-    private static final List<String> PASSWORD_KEY_LIST = Arrays.asList("jwt.key-value", "password", "credentials", "secret");
+    private static final List<String> PASSWORD_KEY_LIST = Arrays.asList("jwt.key-value", "password", "credentials",
+            "secret");
 
     @EventListener
     public void handleContextRefresh(ContextRefreshedEvent event) {
@@ -34,20 +35,21 @@ public class ConfigChangeListener {
                 String propertyValue = env.getProperty(prop);
                 if (propertyValue != null) {
 
-                    if (PASSWORD_KEY_LIST.stream().anyMatch(prop.toLowerCase()::contains) ||
-                        PASSWORD_KEY_LIST.stream().anyMatch(propertyValue.toLowerCase()::contains)) {
+                    if (PASSWORD_KEY_LIST.stream().anyMatch(prop.toLowerCase()::contains)
+                            || PASSWORD_KEY_LIST.stream().anyMatch(propertyValue.toLowerCase()::contains)) {
 
-                        log.info("{}: {}", prop, "**************************"); // hide password
-                    } else {
+                        log.info("{}: {}", prop, "**************************"); // hide
+                                                                                // password
+                    }
+                    else {
                         log.info("{}: {}", prop, propertyValue);
                     }
 
-
-                } else {
+                }
+                else {
                     log.warn("null propertyValue encountered in {}: {}", prop, propertyValue);
                 }
             });
     }
+
 }
-
-

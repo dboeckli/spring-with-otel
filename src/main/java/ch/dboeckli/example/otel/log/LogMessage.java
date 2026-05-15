@@ -10,6 +10,7 @@ public enum LogMessage {
     RECEIVED_CONTEXT_REFRESH_EVENT(10003, "[{}] ### Environment and configuration ###");
 
     private final int id;
+
     private final String format;
 
     LogMessage(final int id, final String format) {
@@ -20,4 +21,5 @@ public enum LogMessage {
     public String getMessage() {
         return MessageFormatter.format(format, "logid=" + id).getMessage();
     }
+
 }

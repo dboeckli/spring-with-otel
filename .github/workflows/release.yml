@@ -66,6 +66,10 @@ jobs:
           token: ${{ secrets.RELEASE_TOKEN }} 
           fetch-depth: 0
 
+      - uses: mfinelli/setup-shfmt@v4
+        with:
+          shfmt-version: 3.13.0
+
       - name: Set up java
         uses: actions/setup-java@v5
         with:

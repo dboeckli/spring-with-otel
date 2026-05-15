@@ -18,20 +18,18 @@ import java.util.List;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "spring.docker.compose.skip.in-tests=false"
-    }
-)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = { "spring.docker.compose.skip.in-tests=false" })
 @ActiveProfiles("local")
 @Slf4j
 @AutoConfigureObservability
 class LoggingWithElasticsearchIT {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Autowired
     TestRestTemplate restTemplate;
+
     @LocalServerPort
     int port;
 
@@ -47,34 +45,31 @@ class LoggingWithElasticsearchIT {
         final String esSearchUrl = "http://localhost:9200/_search";
 
         String queryJson = """
-            {
-              "size": 5,
-              "sort": [{ "@timestamp": { "order": "desc" } }],
-              "query": {
-                "bool": {
-                  "filter": [
-                    { "range": { "@timestamp": { "gte": "now-5m" } } }
-                  ]
+                {
+                  "size": 5,
+                  "sort": [{ "@timestamp": { "order": "desc" } }],
+                  "query": {
+                    "bool": {
+                      "filter": [
+                        { "range": { "@timestamp": { "gte": "now-5m" } } }
+                      ]
+                    }
+                  }
                 }
-              }
-            }
-            """;
+                """;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(queryJson, headers);
 
-        ResponseEntity<String> resp =
-            await()
-                .atMost(Duration.ofSeconds(90))
-                .pollDelay(Duration.ofSeconds(3))
-                .pollInterval(Duration.ofSeconds(3))
-                .conditionEvaluationListener(c -> log.info("Polling Elasticsearch ({}ms): {}", c.getRemainingTimeInMS(), esSearchUrl))
-                .until(() -> restTemplate.exchange(esSearchUrl, HttpMethod.GET, request, String.class),
-                    r -> r.getStatusCode().is2xxSuccessful()
-                        && r.getBody() != null
-                        && containsHits(r.getBody()));
+        ResponseEntity<String> resp = await().atMost(Duration.ofSeconds(90))
+            .pollDelay(Duration.ofSeconds(3))
+            .pollInterval(Duration.ofSeconds(3))
+            .conditionEvaluationListener(
+                    c -> log.info("Polling Elasticsearch ({}ms): {}", c.getRemainingTimeInMS(), esSearchUrl))
+            .until(() -> restTemplate.exchange(esSearchUrl, HttpMethod.GET, request, String.class),
+                    r -> r.getStatusCode().is2xxSuccessful() && r.getBody() != null && containsHits(r.getBody()));
 
         log.info("Elasticsearch response: {}", pretty(resp.getBody()));
     }
@@ -84,7 +79,8 @@ class LoggingWithElasticsearchIT {
             JsonNode root = OBJECT_MAPPER.readTree(body);
             JsonNode hits = root.path("hits").path("hits");
             return hits.isArray() && !hits.isEmpty();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.warn("Failed to parse Elasticsearch JSON", e);
             return false;
         }
@@ -94,8 +90,10 @@ class LoggingWithElasticsearchIT {
         try {
             Object json = OBJECT_MAPPER.readValue(body, Object.class);
             return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return body;
         }
     }
+
 }
