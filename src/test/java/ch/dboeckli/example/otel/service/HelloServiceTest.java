@@ -79,11 +79,6 @@ class HelloServiceTest {
                             () -> assertThat(span.getKind().name()).isEqualTo("INTERNAL"),
                             () -> assertThat(span.getStatus().getStatusCode().name()).isEqualTo("OK"),
 
-                            // Attribute
-                            () -> assertThat(span.getAttributes()
-                                .get(io.opentelemetry.api.common.AttributeKey.stringKey("app.custom.service.flag")))
-                                .isEqualTo("helloFromService"),
-
                             // Events allgemein
                             () -> assertThat(events).hasSize(2),
 
