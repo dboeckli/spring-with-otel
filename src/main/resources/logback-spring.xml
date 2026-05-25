@@ -7,7 +7,7 @@
         <file>target/logs/spring.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.%i.json.gz</fileNamePattern>
+            <fileNamePattern>target/logs/application.%d{yyyy-MM-dd}.%i.json.gz</fileNamePattern>
             <maxFileSize>100MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>5GB</totalSizeCap>

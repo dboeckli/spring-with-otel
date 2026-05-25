@@ -19,5 +19,5 @@
 GET localhost:{{application-port}}/hello
 Accept: application/json
 # traceparent: {version}-{trace-id}-{span-id}-{trace-flags}
-traceparent: 00-{{traceId}}-{{spanId}}-01
-baggage: baggage: testBaggage=hallo
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=hallo

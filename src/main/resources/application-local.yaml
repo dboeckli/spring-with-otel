@@ -49,23 +49,23 @@ management:
       enabled: true
       mode: full
 
-  # --- OpenTelemetry / OTLP ---
   tracing:
-    enabled: true   # enable tracing with OpenTelemetry
+    enabled: true   # enable tracing
+  # export to OTel Collector ---
   otlp:
     tracing:
-      endpoint: http://localhost:4318/v1/traces  # Collector
+      endpoint: http://localhost:4318/v1/traces
       export:
-        enabled: true  # Traces to Collector
+        enabled: false
     metrics:
       export:
-        url: http://localhost:4318/v1/metrics     # Collector
-        enabled: true  # Metrics to Collector
+        url: http://localhost:4318/v1/metrics
+        enabled: false
         step: 60s
     logging:
-      endpoint: http://localhost:4318/v1/logs     # Collector
+      endpoint: http://localhost:4318/v1/logs
       export:
-        enabled: true  # Logs to Collector
+        enabled: false
 
 otel:
   service:
@@ -85,4 +85,12 @@ otel:
     logback-mdc:
       add-baggage: true
       enabled: true
-  propagators: baggage,tracecontext
+    micrometer:
+      enabled: true
+    annotations:
+      enabled: true
+    common:
+      default-enabled: true
+  propagators:
+    - baggage
+    - tracecontext
