@@ -165,3 +165,64 @@ folgende Ui's stehen zur Verfügung:
 - **Elastic APM Server** – OTLP-Endpunkt für APM
   - OTLP HTTP: `http://localhost:8200` (per Port-Mapping auf `apm-server:8200`)
 
+## Sandbox
+
+Dieses Repo ist für den Betrieb in einer Docker-Sandbox mit dem opencode-sandbox-kit ausgelegt — der Agent folgt dabei den Konventionen aus [`AGENTS.md`](./AGENTS.md) / [`CLAUDE.md`](./CLAUDE.md).
+
+Initial-Setup (einmalig, Kit-Quellen erlauben):
+
+```powershell
+sbx settings set kit.allowedSources --% "[\"docker.io/\",\"github.com/dboeckli/\"]"
+```
+
+Sandbox-Kit hinzufügen:
+
+```powershell
+sbx kit add git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent
+```
+
+Sandbox starten (PowerShell):
+
+```powershell
+sbx run opencode --name spring-with-otel `
+    --static-mcp idea `
+    --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" `
+    -t docker/sandbox-templates:opencode-docker-0.5.0 `
+    "C:\development\projects\spring-with-otel" `
+    "C:\development\maven-repo:ro"
+```
+
+Mit Kubernetes-Support zusätzlich die Host-kubeconfig mounten:
+
+```powershell
+sbx run opencode --name spring-with-otel `
+    --static-mcp idea `
+    --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" `
+    -t docker/sandbox-templates:opencode-docker-0.5.0 `
+    "C:\development\projects\spring-with-otel" `
+    "$env:USERPROFILE\.kube:ro" `
+    "C:\development\maven-repo:ro"
+```
+
+Sandbox aus WSL starten:
+
+```bash
+opencode --name spring-with-otel --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" "/mnt/c/development/projects/spring-with-otel"
+```
+
+Sandbox entfernen:
+
+```powershell
+sbx remove spring-with-otel
+```
+
+### Start the app
+
+Die App läuft auf Port 8080 (Profile `local`). Da `spring.docker.compose.enabled=true` in `application-local.yaml` gesetzt ist, startet der komplette Observability-Stack (`compose.yaml`) beim App-Start automatisch mit.
+
+```shell
+docker compose up        # optional: Stack manuell starten (sonst startet er mit der App)
+```
+
+Danach die IntelliJ-Run-Config `SpringApplication` starten (`.run/SpringApplication.run.xml`, Main-Class `ch.dboeckli.example.otel.SpringApplication`). UIs/Dienste siehe oben (Prometheus `:9090`, Jaeger `:16686`, Zipkin `:9411`, Elasticsearch `:9200`, Kibana `:5601`, Elastic APM `:8200`).
+
