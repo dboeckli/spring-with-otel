@@ -82,10 +82,14 @@ not just "done").
 `kibana` (5601), `apm-server` (8200). Run the app with `./mvnw spring-boot:run` (profile `local`) or the
 `SpringApplication.run.xml` run config.
 
-Helm packaging is part of the `install` phase. Charts live in `helm-charts/`; during the build Maven
-copies them to `target/helm-charts`, merges `dependencies-values.yaml`, and versions them
-`v<project.version>` (SNAPSHOT → `v<version>-<git.abbrev>`). K8s deploy on the host goes through the
-PowerShell scripts `.run/scripts/deploy-k8s.ps1` / `uninstall-k8s.ps1` (IntelliJ run configs).
+Helm packaging is part of the `install` phase (exec-maven-plugin runs the `helm` binary directly). Charts
+live in `helm-charts/`; during the build Maven copies them to `target/helm-charts`, merges
+`dependencies-values.yaml`, and versions them `<project.version>` (SNAPSHOT → `-snapshot.<git.abbrev>` on
+feature branches, `-snapshot` on main/master; the `v` prefix and `-SNAPSHOT` suffix are dropped). The
+chart is renamed to `<artifactId>-chart`, packaged as `target/helm/repo/<artifactId>-chart-<version>.tgz`,
+and pushed via `helm registry login`/`helm push` to `oci://registry-1.docker.io/${env.DOCKER_USER}` in the
+`deploy` phase. K8s deploy on the host goes through the PowerShell scripts `.run/scripts/deploy-k8s.ps1` /
+`uninstall-k8s.ps1` / `test-k8s.ps1` (IntelliJ run configs).
 
 ## Dependency management
 
