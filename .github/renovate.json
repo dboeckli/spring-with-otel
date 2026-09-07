@@ -7,6 +7,14 @@
     "ignorePresets": [
         "workarounds:javaLTSVersions"
     ],
+    "ignorePaths": [
+        "**/node_modules/**",
+        "**/bower_components/**",
+        "**/vendor/**",
+        "**/examples/**",
+        "**/__tests__/**",
+        "**/__fixtures__/**"
+    ],
     "customDatasources": {
         "custom_java": {
             "defaultRegistryUrlTemplate": "https://api.adoptium.net/v3/info/available_releases",
