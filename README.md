@@ -184,22 +184,24 @@ sbx kit add git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencod
 Sandbox starten (PowerShell):
 
 ```powershell
-sbx run opencode --name spring-with-otel `
-    --static-mcp idea `
+sbx run opencode `
     --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" `
-    -t docker/sandbox-templates:opencode-docker-0.5.0 `
-    "C:\development\projects\spring-with-otel" `
+    --template docker/sandbox-templates:opencode-docker-0.5.0 `
+    --no-share-skills `
+    --static-mcp idea `
+    . `
     "C:\development\maven-repo:ro"
 ```
 
 Mit Kubernetes-Support zusätzlich die Host-kubeconfig mounten:
 
 ```powershell
-sbx run opencode --name spring-with-otel `
-    --static-mcp idea `
+sbx run opencode `
     --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" `
-    -t docker/sandbox-templates:opencode-docker-0.5.0 `
-    "C:\development\projects\spring-with-otel" `
+    --template docker/sandbox-templates:opencode-docker-0.5.0 `
+    --no-share-skills `
+    --static-mcp idea `
+    . `
     "$env:USERPROFILE\.kube:ro" `
     "C:\development\maven-repo:ro"
 ```
@@ -207,13 +209,18 @@ sbx run opencode --name spring-with-otel `
 Sandbox aus WSL starten:
 
 ```bash
-opencode --name spring-with-otel --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" "/mnt/c/development/projects/spring-with-otel"
+sbx run opencode \
+    --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" \
+    --template docker/sandbox-templates:opencode-docker-0.5.0 \
+    --no-share-skills \
+    --static-mcp idea \
+    .
 ```
 
 Sandbox entfernen:
 
 ```powershell
-sbx remove spring-with-otel
+sbx remove <sandbox-name>
 ```
 
 ### Start the app
