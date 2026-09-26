@@ -175,19 +175,13 @@ Initial-Setup (einmalig, Kit-Quellen erlauben):
 sbx settings set kit.allowedSources --% "[\"docker.io/\",\"github.com/dboeckli/\"]"
 ```
 
-Sandbox-Kit hinzufügen:
-
-```powershell
-sbx kit add git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent
-```
-
 Sandbox starten (PowerShell):
 
 ```powershell
 sbx run opencode `
     --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" `
-    --template docker/sandbox-templates:opencode-docker-0.5.0 `
-    --no-share-skills `
+    --template docker.io/domboeckli/sbx-opencode-tooling:latest `
+    --skills=off `
     --static-mcp idea `
     . `
     "C:\development\maven-repo:ro"
@@ -198,8 +192,8 @@ Mit Kubernetes-Support zusätzlich die Host-kubeconfig mounten:
 ```powershell
 sbx run opencode `
     --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" `
-    --template docker/sandbox-templates:opencode-docker-0.5.0 `
-    --no-share-skills `
+    --template docker.io/domboeckli/sbx-opencode-tooling:latest `
+    --skills=off `
     --static-mcp idea `
     . `
     "$env:USERPROFILE\.kube:ro" `
@@ -211,16 +205,22 @@ Sandbox aus WSL starten:
 ```bash
 sbx run opencode \
     --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" \
-    --template docker/sandbox-templates:opencode-docker-0.5.0 \
-    --no-share-skills \
+    --template docker.io/domboeckli/sbx-opencode-tooling:latest \
+    --skills=off \
     --static-mcp idea \
     .
+```
+
+Apply the kit to an existing sandbox (restarts the sandbox, VM state is kept):
+
+```powershell
+sbx kit add opencode-spring-with-otel "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent"
 ```
 
 Sandbox entfernen:
 
 ```powershell
-sbx remove <sandbox-name>
+sbx remove opencode-spring-with-otel
 ```
 
 ### Start the app
