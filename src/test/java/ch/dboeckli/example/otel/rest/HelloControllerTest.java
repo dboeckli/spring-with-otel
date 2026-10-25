@@ -1,11 +1,10 @@
 package ch.dboeckli.example.otel.rest;
 
-import io.opentelemetry.sdk.autoconfigure.spi.AutoConfigurationCustomizerProvider;
+import ch.dboeckli.example.otel.test.config.InMemoryTracingConfig;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.data.EventData;
 import io.opentelemetry.sdk.trace.data.SpanData;
-import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -14,10 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -35,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = { "otel.traces.exporter=none", "otel.metrics.exporter=none", "otel.logs.exporter=none" })
 @ActiveProfiles("local")
-@Import(HelloControllerTest.TestTracingConfig.class)
+@Import(InMemoryTracingConfig.class)
 @Slf4j
 public class HelloControllerTest {
 
@@ -47,22 +44,6 @@ public class HelloControllerTest {
 
     @Autowired
     ApplicationContext ctx;
-
-    @TestConfiguration
-    static class TestTracingConfig {
-
-        @Bean
-        public InMemorySpanExporter inMemorySpanExporter() {
-            return InMemorySpanExporter.create();
-        }
-
-        @Bean
-        public AutoConfigurationCustomizerProvider inMemoryTracerCustomizer(InMemorySpanExporter exporter) {
-            return customizer -> customizer.addTracerProviderCustomizer(
-                    (builder, config) -> builder.addSpanProcessor(SimpleSpanProcessor.create(exporter)));
-        }
-
-    }
 
     @BeforeEach
     void setUp() {
