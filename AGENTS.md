@@ -99,6 +99,9 @@ and pushed via `helm registry login`/`helm push` to `oci://registry-1.docker.io/
 
 ## CI (GitHub Actions)
 
+- CI pins Helm `v4.3.2` via `azure/setup-helm@v5.1.0` before the first Helm call (runner default is
+  Helm 3). The sandbox kit ships Helm 4 as `helm`, so `-Dhelm.executable=helm4` is no longer needed.
+
 - `maven-build.yml`: `setup` (version calc) → `build` (`mvn -B -e deploy` incl. docker/helm push) →
   `analyze` (`verify` with docker/start-stop skips + SonarCloud) → `Trigger-Deploy` (runs
   `deploy-and-test-cluster.yml`, push only).
